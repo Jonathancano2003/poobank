@@ -10,6 +10,10 @@ use ComBank\OverdraftStrategy\Contracts\OverdraftInterface;
 use ComBank\Support\Traits\AmountValidationTrait;
 use ComBank\Transactions\Contracts\BankTransactionInterface;
 use ComBank\Bank\BankAccount;
-class NationalBankAccount extends BankAccount implements BankAccountInterface {
 
-} 
+namespace ComBank\Bank;
+
+class NationalBankAccount extends BankAccount
+{
+ 
+}
