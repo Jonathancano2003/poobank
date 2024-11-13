@@ -6,11 +6,12 @@ class InternationalBankAccount extends BankAccount
 {
   
 
-    public function getConvertedBalance(float $exchangeRate): float
+    public function getConvertedBalance(): float
     {
+        return $this->convertBalance($this->getBalance());
     }
-
     public function getConvertedCurrency(string $newCurrency): string
     {
+        return "$";
     }
 }
