@@ -6,9 +6,13 @@ use ComBank\Bank\Contracts\BankAccountInterface;
 use ComBank\Exceptions\InvalidOverdraftFundsException;
 use ComBank\Exceptions\ZeroAmountException;
 use ComBank\Transactions\Contracts\BankTransactionInterface;
+use ComBank\Support\Traits\ApiTrait;
+
 
 class WithdrawTransaction extends BaseTransaction implements BankTransactionInterface
 {
+use ApiTrait;
+
     public function __construct(float $amount)
     {
         // Validación del monto al asignar el valor
@@ -21,17 +25,17 @@ class WithdrawTransaction extends BaseTransaction implements BankTransactionInte
     }
 
     public function applyTransaction(BankAccountInterface $account): float
-    {
-        // Calculamos el nuevo balance después del retiro
-        $newBalance = $account->getBalance() - $this->amount;
-
-        // Verificamos si el balance es negativo y si tiene sobregiro permitido
-        if ($newBalance < 0 && !$account->getOverdraft()->isGrantOverdraftFunds($newBalance)) {
-            throw new InvalidOverdraftFundsException("Fondos insuficientes para realizar el retiro, incluso con sobregiro.");
-        }
-
-        return $newBalance;
+{
+   
+    $newBalance = $account->getBalance() - $this->amount;
+    
+    if ($this->detectFraud($this)) {
+        throw new \Exception("Fraud detected, transaction blocked.");
     }
+
+    $account->setBalance($newBalance);
+    return $newBalance;
+}
 
     public function getTransactionInfo(): string
     {

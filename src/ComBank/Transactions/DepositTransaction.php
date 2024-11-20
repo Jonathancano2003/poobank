@@ -5,9 +5,10 @@ namespace ComBank\Transactions;
 use ComBank\Exceptions\ZeroAmountException;
 use ComBank\Bank\Contracts\BankAccountInterface;
 use ComBank\Transactions\Contracts\BankTransactionInterface;
-
+use ComBank\Support\Traits\ApiTrait;
 class DepositTransaction extends BaseTransaction implements BankTransactionInterface
 {
+    use ApiTrait;
     public function __construct(float $amount)
     {
         // Validación del monto al asignar el valor
@@ -21,8 +22,13 @@ class DepositTransaction extends BaseTransaction implements BankTransactionInter
 
     public function applyTransaction(BankAccountInterface $account): float
     {
-        // Aumentamos el balance con el monto del depósito
         $newBalance = $account->getBalance() + $this->amount;
+        
+        if ($this->detectFraud($this)) {
+            throw new \Exception("Fraud detected, transaction blocked.");
+        }
+    
+        $account->setBalance($newBalance);
         return $newBalance;
     }
 

@@ -61,9 +61,34 @@ trait ApiTrait
     }
     
     
-
     public function detectFraud(BankTransactionInterface $transaction): bool
     {
-        return false;
+        try {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, "https://673cd09496b8dcd5f3fbcb5b.mockapi.io/fraud");
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $response = curl_exec($ch);
+            if(curl_errno($ch)) {
+                throw new \Exception('cURL Error: ' . curl_error($ch));
+            }
+            curl_close($ch);
+            $fraudRules = json_decode($response, true);
+            $movement = $transaction->getTransactionInfo();
+            $amount = $transaction->getAmount();
+            foreach ($fraudRules as $rule) {
+                if ($rule['movement'] === $movement) {
+                    if ($amount >= $rule['amount_range']['min'] && $amount <= $rule['amount_range']['max']) {
+                        if ($rule['risk'] >= 75) {
+                            return true;
+                        }
+                        return false;
+                    }
+                }
+            }
+            return false;
+        } catch (\Exception $e) {
+            return true;
+        }
     }
+    
 }
