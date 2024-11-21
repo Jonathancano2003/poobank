@@ -18,6 +18,7 @@ class BankAccount implements BankAccountInterface
 {
     use AmountValidationTrait;
     use ApiTrait;
+
     private float $balance;
     private bool $status;
     private OverdraftInterface $overdraft;
@@ -25,7 +26,7 @@ class BankAccount implements BankAccountInterface
     const STATUS_OPEN = true;
     const STATUS_CLOSED = false;
 
-    public function __construct($balance)
+    public function __construct(float $balance)
     {
         $this->setBalance($balance);
         $this->status = self::STATUS_OPEN;
@@ -78,17 +79,18 @@ class BankAccount implements BankAccountInterface
 
     public function applyOverdraft(OverdraftInterface $overdraft): void
     {
-      
         $this->overdraft = $overdraft;
     }
 
     public function setBalance(float $balance): void
     {
-       
+        // Si el balance es negativo, verificamos si el sobregiro lo permite
         if ($balance < 0 && !$this->overdraft->isGrantOverdraftFunds($balance)) {
+            // Si no hay suficiente sobregiro, lanzamos una excepción
             throw new InvalidOverdraftFundsException("Fondos de sobregiro insuficientes para cubrir el balance negativo.");
         }
-
+    
+        // Si pasa la validación, establecemos el balance
         $this->balance = $balance;
     }
 }
